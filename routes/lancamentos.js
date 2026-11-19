@@ -61,7 +61,7 @@ function validarCampos(req, res) {
 
 // Confere se a categoria e a fonte/destino existem e são do usuário dono do token,
 // e se o tipo da categoria combina com o tipo do lançamento. Já devolve a resposta
-// de erro quando necessário; retorna null nesse caso.
+// de erro quando necessário; retorna null nesse caso, ou { categoria, fonteDestino }.
 async function validarPosse(res, usuarioId, dados) {
   const categoria = await Categoria.buscarPorId(dados.categoriaId, usuarioId);
   if (!categoria) {
@@ -79,7 +79,19 @@ async function validarPosse(res, usuarioId, dados) {
     });
     return null;
   }
-  return true;
+  return { categoria, fonteDestino };
+}
+
+// Só usado no POST: 'parcelas' é opcional (default 1). Quando vier, tem que ser
+// inteiro de 1 a 48. Devolve a resposta 400 e null quando inválido.
+function validarParcelas(req, res) {
+  const { parcelas } = req.body || {};
+  if (parcelas === undefined) return 1;
+  if (!Number.isInteger(parcelas) || parcelas < 1 || parcelas > 48) {
+    erroValidacao(res, { parcelas: 'O número de parcelas deve ser um inteiro de 1 a 48.' });
+    return null;
+  }
+  return parcelas;
 }
 
 router.post('/', async (req, res) => {
@@ -87,7 +99,22 @@ router.post('/', async (req, res) => {
   const dados = validarCampos(req, res);
   if (!dados) return;
 
-  if (!(await validarPosse(res, usuarioId, dados))) return;
+  const parcelas = validarParcelas(req, res);
+  if (!parcelas) return;
+
+  const posse = await validarPosse(res, usuarioId, dados);
+  if (!posse) return;
+
+  if (parcelas > 1) {
+    if (posse.fonteDestino.tipo !== 'cartao_credito' || dados.tipo !== 'saida') {
+      return erroValidacao(res, {
+        parcelas: 'Só é possível parcelar uma saída num cartão de crédito.',
+      });
+    }
+    const grupo = await Lancamento.criarParcelas(usuarioId, dados, parcelas);
+    const itens = await Lancamento.listarPorGrupo(grupo, usuarioId);
+    return res.status(201).json({ grupoParcelamento: grupo, itens: itens.map(formatar) });
+  }
 
   const id = await Lancamento.criar(usuarioId, dados);
   const lancamento = await Lancamento.buscarPorId(id, usuarioId);
@@ -123,8 +150,21 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const usuarioId = req.auth.id;
   if (!idValido(req.params.id)) return naoEncontrado(res, 'Lançamento não encontrado.');
+  const id = Number(req.params.id);
 
-  const excluiu = await Lancamento.excluir(Number(req.params.id), usuarioId);
+  if (req.query.todasParcelas === 'true') {
+    const lancamento = await Lancamento.buscarPorId(id, usuarioId);
+    if (!lancamento) return naoEncontrado(res, 'Lançamento não encontrado.');
+
+    if (lancamento.grupo_parcelamento) {
+      await Lancamento.excluirGrupo(lancamento.grupo_parcelamento, usuarioId);
+    } else {
+      await Lancamento.excluir(id, usuarioId);
+    }
+    return res.status(204).end();
+  }
+
+  const excluiu = await Lancamento.excluir(id, usuarioId);
   if (!excluiu) return naoEncontrado(res, 'Lançamento não encontrado.');
   res.status(204).end();
 });
