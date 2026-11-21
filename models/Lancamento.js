@@ -2,6 +2,27 @@ const crypto = require('crypto');
 const pool = require('../database/connection');
 const { dividirEmParcelas } = require('../utils/parcelas');
 
+// monta o WHERE e os parâmetros em comum para listar() e resumo(), sempre com '?'
+function construirWhere(usuarioId, filtros) {
+  const condicoes = ['l.usuario_id = ?', 'l.data BETWEEN ? AND ?'];
+  const params = [usuarioId, filtros.inicio, filtros.fim];
+  if (filtros.tipo) {
+    condicoes.push('l.tipo = ?');
+    params.push(filtros.tipo);
+  }
+  if (filtros.categoriaId) {
+    condicoes.push('l.categoria_id = ?');
+    params.push(filtros.categoriaId);
+  }
+  if (filtros.fonteDestinoId) {
+    condicoes.push('l.fonte_destino_id = ?');
+    params.push(filtros.fonteDestinoId);
+  }
+  return { where: condicoes.join(' AND '), params };
+}
+
+const ITENS_POR_PAGINA = 20;
+
 class Lancamento {
   async criar(usuarioId, dados) {
     const [resultado] = await pool.query(
@@ -51,6 +72,45 @@ class Lancamento {
       [grupo, usuarioId]
     );
     return linhas;
+  }
+
+  async listar(usuarioId, filtros) {
+    const { where, params } = construirWhere(usuarioId, filtros);
+
+    const [contagem] = await pool.query(
+      `SELECT COUNT(*) AS total FROM lancamentos l WHERE ${where}`,
+      params
+    );
+    const total = contagem[0].total;
+
+    const offset = (filtros.pagina - 1) * ITENS_POR_PAGINA;
+    const [linhas] = await pool.query(
+      `SELECT l.id, l.tipo, l.descricao, l.valor, l.data,
+              l.parcela_atual, l.total_parcelas, l.grupo_parcelamento,
+              c.id AS categoria_id, c.nome AS categoria_nome,
+              f.id AS fonte_id, f.nome AS fonte_nome
+         FROM lancamentos l
+         JOIN categorias c      ON c.id = l.categoria_id
+         JOIN fontes_destinos f ON f.id = l.fonte_destino_id
+        WHERE ${where}
+        ORDER BY l.data DESC, l.id DESC
+        LIMIT ? OFFSET ?`,
+      [...params, ITENS_POR_PAGINA, offset]
+    );
+
+    return { total, itens: linhas };
+  }
+
+  async resumo(usuarioId, filtros) {
+    const { where, params } = construirWhere(usuarioId, filtros);
+    const [linhas] = await pool.query(
+      `SELECT COALESCE(SUM(CASE WHEN l.tipo = 'entrada' THEN l.valor END), 0) AS entradas,
+              COALESCE(SUM(CASE WHEN l.tipo = 'saida'   THEN l.valor END), 0) AS saidas
+         FROM lancamentos l
+        WHERE ${where}`,
+      params
+    );
+    return linhas[0];
   }
 
   async buscarPorId(id, usuarioId) {

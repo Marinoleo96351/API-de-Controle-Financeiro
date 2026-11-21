@@ -6,6 +6,9 @@ const Categoria = require('../models/Categoria');
 const FonteDestino = require('../models/FonteDestino');
 const { erroValidacao, naoEncontrado } = require('../utils/respostas');
 const { dataValida, numeroPositivo, idValido } = require('../utils/validacao');
+const { mesCorrente } = require('../utils/datas');
+
+const r2 = (n) => Number(n.toFixed(2)); // arredonda pra 2 casas e garante Number
 
 function formatar(l) {
   return {
@@ -93,6 +96,76 @@ function validarParcelas(req, res) {
   }
   return parcelas;
 }
+
+// Valida a query string do GET /. 'inicio'/'fim' ausentes caem no mês corrente.
+// Retorna null quando já respondeu (400); a rota deve parar nesse caso.
+function validarFiltros(req, res) {
+  const { inicio: inicioQuery, fim: fimQuery, tipo, categoriaId, fonteDestinoId, pagina: paginaQuery } = req.query;
+  const campos = {};
+  const padrao = mesCorrente();
+
+  const inicio = inicioQuery === undefined ? padrao.inicio : inicioQuery;
+  if (inicioQuery !== undefined && !dataValida(inicio)) {
+    campos.inicio = "A data de início deve estar no formato 'AAAA-MM-DD' e ser uma data válida.";
+  }
+
+  const fim = fimQuery === undefined ? padrao.fim : fimQuery;
+  if (fimQuery !== undefined && !dataValida(fim)) {
+    campos.fim = "A data de fim deve estar no formato 'AAAA-MM-DD' e ser uma data válida.";
+  }
+
+  if (!campos.inicio && !campos.fim && inicio > fim) {
+    campos.fim = 'A data de fim deve ser igual ou posterior à data de início.';
+  }
+
+  if (tipo !== undefined && tipo !== 'entrada' && tipo !== 'saida') {
+    campos.tipo = "O tipo deve ser 'entrada' ou 'saida'.";
+  }
+  if (categoriaId !== undefined && !idValido(categoriaId)) {
+    campos.categoriaId = 'A categoria informada é inválida.';
+  }
+  if (fonteDestinoId !== undefined && !idValido(fonteDestinoId)) {
+    campos.fonteDestinoId = 'A fonte/destino informada é inválida.';
+  }
+  if (paginaQuery !== undefined && !idValido(paginaQuery)) {
+    campos.pagina = 'A página deve ser um número inteiro maior ou igual a 1.';
+  }
+
+  if (Object.keys(campos).length > 0) {
+    erroValidacao(res, campos);
+    return null;
+  }
+
+  return {
+    inicio,
+    fim,
+    tipo,
+    categoriaId: categoriaId !== undefined ? Number(categoriaId) : undefined,
+    fonteDestinoId: fonteDestinoId !== undefined ? Number(fonteDestinoId) : undefined,
+    pagina: paginaQuery !== undefined ? Number(paginaQuery) : 1,
+  };
+}
+
+// GET /lancamentos?inicio=&fim=&tipo=&categoriaId=&fonteDestinoId=&pagina=
+router.get('/', async (req, res) => {
+  const usuarioId = req.auth.id;
+  const filtros = validarFiltros(req, res);
+  if (!filtros) return;
+
+  const { total, itens } = await Lancamento.listar(usuarioId, filtros);
+  const resumo = await Lancamento.resumo(usuarioId, filtros);
+
+  const entradas = r2(Number(resumo.entradas));
+  const saidas = r2(Number(resumo.saidas));
+
+  res.json({
+    periodo: { inicio: filtros.inicio, fim: filtros.fim },
+    resumo: { entradas, saidas, saldo: r2(entradas - saidas) },
+    pagina: filtros.pagina,
+    totalPaginas: Math.max(1, Math.ceil(total / 20)),
+    itens: itens.map(formatar),
+  });
+});
 
 router.post('/', async (req, res) => {
   const usuarioId = req.auth.id;
