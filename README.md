@@ -88,3 +88,17 @@ Todas exigem o cabeçalho `Authorization: Bearer TOKEN`, exceto cadastro e login
 | GET | `/relatorios/fontes-destinos` | sim | Entradas por fonte, saídas por destino e saldo das contas (`?inicio=&fim=`) |
 | GET | `/relatorios/categorias` | sim | Relatório por categoria |
 | GET | `/relatorios/faturas` | sim | Previsão de faturas dos cartões |
+
+## Decisões tomadas
+
+- **Dono vem do token:** o `id` do usuário é lido do JWT (`req.auth.id`), nunca do corpo da requisição. Toda consulta filtra por `usuario_id`.
+- **Registro de outro usuário devolve 404**, nunca 403: para quem pede, o registro não existe.
+- **Categoria com lançamentos não troca de tipo** (409), senão uma saída ficaria com categoria de entrada.
+- **Categoria ou fonte/destino com lançamentos não pode ser excluída** (409), por causa da chave estrangeira.
+- **Nome repetido** devolve 409: categoria é única por usuário, nome e tipo; fonte/destino é única por usuário e nome.
+- **Conta e renda gravam os campos de cartão como `null`**, mesmo que venham no corpo.
+- **Parcelamento:** só saída em cartão de crédito, de 1 a 48 parcelas. As parcelas têm o mesmo `grupo_parcelamento`.
+- **Valores monetários** chegam do MySQL como texto (`DECIMAL`) e são convertidos para número antes de calcular e responder.
+- **Datas** no formato `AAAA-MM-DD`; datas inexistentes (como 2026-02-30) são recusadas.
+- **Relatório por fonte/destino:** `inicio` e `fim` são obrigatórios, e `inicio` não pode ser depois de `fim` (400).
+- **Senha** guardada apenas como hash (bcrypt); o `senha_hash` nunca sai nas respostas.
