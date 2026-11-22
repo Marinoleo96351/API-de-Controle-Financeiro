@@ -61,3 +61,30 @@ Para refazer o banco do zero: `DROP DATABASE api_financas;` e rode o `schema.sql
 | Bruno Lima | bruno@email.com | Senha1234 |
 
 A Ana tem lançamentos de setembro a novembro de 2026 e uma compra parcelada (Notebook em 10x). O Bruno tem poucos lançamentos, para mostrar que um usuário não vê os dados do outro.
+
+
+## Rotas
+
+Todas exigem o cabeçalho `Authorization: Bearer TOKEN`, exceto cadastro e login.
+
+| Método | Caminho | Protegida | O que faz |
+| --- | --- | --- | --- |
+| POST | `/auth/cadastro` | não | Cria o usuário (com categorias padrão e Conta corrente) |
+| POST | `/auth/login` | não | Devolve o token JWT (vale 1 hora) |
+| GET | `/auth/me` | sim | Dados do usuário logado |
+| GET | `/categorias` | sim | Lista categorias (filtro `?tipo=entrada` ou `saida`) |
+| POST | `/categorias` | sim | Cria categoria |
+| PUT | `/categorias/:id` | sim | Atualiza categoria (não troca o tipo se houver lançamentos) |
+| DELETE | `/categorias/:id` | sim | Exclui categoria (409 se tiver lançamentos) |
+| GET | `/fontes-destinos` | sim | Lista fontes/destinos (filtro `?tipo=`) |
+| POST | `/fontes-destinos` | sim | Cria fonte/destino |
+| PUT | `/fontes-destinos/:id` | sim | Atualiza fonte/destino |
+| DELETE | `/fontes-destinos/:id` | sim | Exclui fonte/destino (409 se tiver lançamentos) |
+| GET | `/lancamentos` | sim | Lista com filtros (`inicio`, `fim`, `tipo`, `categoriaId`, `fonteDestinoId`, `pagina`), paginação de 20 e resumo. Sem datas, usa o mês corrente |
+| POST | `/lancamentos` | sim | Cria lançamento; com `parcelas` (1 a 48) cria compra parcelada, só saída em cartão de crédito |
+| GET | `/lancamentos/:id` | sim | Busca um lançamento |
+| PUT | `/lancamentos/:id` | sim | Atualiza um lançamento |
+| DELETE | `/lancamentos/:id` | sim | Exclui um lançamento (`?todasParcelas=true` exclui o grupo inteiro) |
+| GET | `/relatorios/fontes-destinos` | sim | Entradas por fonte, saídas por destino e saldo das contas (`?inicio=&fim=`) |
+| GET | `/relatorios/categorias` | sim | Relatório por categoria |
+| GET | `/relatorios/faturas` | sim | Previsão de faturas dos cartões |
