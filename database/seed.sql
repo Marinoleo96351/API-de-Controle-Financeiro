@@ -73,3 +73,13 @@ INSERT INTO lancamentos
   (1, 'saida',   'Curso online',       199.90, '2026-11-17', 8, 3),
   (1, 'saida',   'Compra no Visa',     310.00, '2026-11-19', 9, 4),
   (1, 'saida',   'Transferência para Poupança', 400.00, '2026-11-20', 9, 5);
+
+  -- Bruno: poucos lançamentos (ids próprios: categorias 10 a 18, fontes 6 a 8)
+INSERT INTO lancamentos
+  (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
+  (2, 'entrada', 'Salário outubro',  3800.00, '2026-10-05', 10, 7),
+  (2, 'saida',   'Aluguel',          1200.00, '2026-10-06', 13, 6),
+  (2, 'saida',   'Mercado',           430.00, '2026-10-12', 12, 6),
+  (2, 'saida',   'Jogo e streaming',  120.00, '2026-10-20', 16, 8),
+  (2, 'entrada', 'Salário novembro', 3800.00, '2026-11-05', 10, 7),
+  (2, 'saida',   'Mercado',           390.00, '2026-11-10', 12, 6);
