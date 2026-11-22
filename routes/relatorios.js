@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Relatorio = require('../models/Relatorio');
+const FonteDestino = require('../models/FonteDestino');
 const { erroValidacao } = require('../utils/respostas');
 const { validarPeriodo } = require('../utils/validacao');
+const { hoje } = require('../utils/datas');
+const { montarFaturas } = require('../utils/faturas');
 
 // /relatorios/categorias — Marino (RF7)
 router.get('/categorias', (req, res) => res.status(501).json({ erro: 'Ainda não implementado.' }));
@@ -42,7 +45,45 @@ router.get('/fontes-destinos', async (req, res) => {
   });
 });
 
+// valida 'meses' da query string: padrão 3, inteiro de 1 a 12. Devolve null se inválido.
+function validarMeses(mesesQuery) {
+  if (mesesQuery === undefined) return 3;
+  const n = Number(mesesQuery);
+  if (!Number.isInteger(n) || n < 1 || n > 12) return null;
+  return n;
+}
+
 // /relatorios/faturas — Marino (RF9)
-router.get('/faturas', (req, res) => res.status(501).json({ erro: 'Ainda não implementado.' }));
+router.get('/faturas', async (req, res) => {
+  const usuarioId = req.auth.id;
+
+  const meses = validarMeses(req.query.meses);
+  if (meses === null) {
+    return erroValidacao(res, { meses: 'O número de meses deve ser um inteiro de 1 a 12.' });
+  }
+
+  const cartoes = await FonteDestino.listarCartoes(usuarioId);
+  const dataHoje = hoje();
+
+  const resultado = await Promise.all(cartoes.map(async (cartao) => {
+    const lancamentos = await Relatorio.lancamentosDeCartao(cartao.id, usuarioId);
+    const cartaoCalc = { diaFechamento: cartao.dia_fechamento, diaVencimento: cartao.dia_vencimento };
+    const { faturas, limiteUtilizado } = montarFaturas(cartaoCalc, lancamentos, dataHoje, meses);
+
+    const limite = cartao.limite === null ? null : Number(cartao.limite);
+    return {
+      id: cartao.id,
+      nome: cartao.nome,
+      diaFechamento: cartao.dia_fechamento,
+      diaVencimento: cartao.dia_vencimento,
+      limite,
+      limiteUtilizado,
+      limiteDisponivel: limite === null ? null : Number((limite - limiteUtilizado).toFixed(2)),
+      faturas,
+    };
+  }));
+
+  return res.status(200).json(resultado);
+});
 
 module.exports = router;
