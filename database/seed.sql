@@ -37,3 +37,15 @@ INSERT INTO fontes_destinos
   (6, 2, 'Conta corrente', 'conta',          NULL, NULL, NULL,    FALSE),
   (7, 2, 'Salário',        'renda',          NULL, NULL, NULL,    FALSE),
   (8, 2, 'Cartão Inter',   'cartao_credito', 10,   17,   2000.00, FALSE);
+
+  -- Ana: setembro de 2026
+INSERT INTO lancamentos
+  (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
+  (1, 'entrada', 'Salário setembro',  5200.00, '2026-09-05', 1, 2),
+  (1, 'saida',   'Aluguel',           1500.00, '2026-09-06', 4, 1),
+  (1, 'saida',   'Mercado',            620.40, '2026-09-10', 3, 1),
+  (1, 'saida',   'Combustível',        280.00, '2026-09-12', 6, 1),
+  (1, 'saida',   'Cinema e jantar',    190.00, '2026-09-20', 7, 4),
+  (1, 'saida',   'Farmácia',            85.50, '2026-09-22', 5, 4),
+  (1, 'saida',   'Compra no Visa',     240.00, '2026-09-25', 9, 4),
+  (1, 'saida',   'Transferência para Poupança', 400.00, '2026-09-28', 9, 5);
