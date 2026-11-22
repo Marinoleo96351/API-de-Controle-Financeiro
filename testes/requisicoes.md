@@ -249,7 +249,49 @@ curl -i http://localhost:3000/fontes-destinos
 
 ## Relatórios
 
-(ARTHUR-fontes/destinos; MARINO-categorias e faturas)
+Pré-requisito: variável `$TOKEN` definida (veja a seção Token).
+
+### Por fonte/destino (200)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/fontes-destinos?inicio=2026-10-01&fim=2026-10-31"
+```
+
+Resposta: `periodo`, `entradas` (total e lista de fontes), `saidas` (total e lista de destinos) e `contas` (entradas, saídas e saldo de cada conta). Em outubro, com o seed da Ana: entradas 5200 e saídas 6920,80.
+
+### Sem inicio (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/fontes-destinos?fim=2026-10-31"
+```
+
+Resposta: `campos.inicio`.
+
+### Data inexistente (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/fontes-destinos?inicio=2026-02-30&fim=2026-10-31"
+```
+
+Resposta: `campos.inicio`.
+
+### Início depois do fim (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/fontes-destinos?inicio=2026-10-31&fim=2026-10-01"
+```
+
+Resposta: `campos.fim`.
+
+### Sem token (401)
+
+```bash
+curl -i "http://localhost:3000/relatorios/fontes-destinos?inicio=2026-10-01&fim=2026-10-31"
+```
+
+### Por categoria e faturas
+
+(MARINO)
 
 ## Saúde financeira
 
