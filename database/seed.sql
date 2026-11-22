@@ -61,3 +61,15 @@ INSERT INTO lancamentos
   (1, 'saida',   'Consulta médica',    220.00, '2026-10-21', 5, 4),
   (1, 'saida',   'Compra no Visa',     430.00, '2026-10-25', 9, 4),
   (1, 'saida',   'Transferência para Poupança', 400.00, '2026-10-29', 9, 5);
+
+  -- Ana: novembro de 2026
+INSERT INTO lancamentos
+  (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
+  (1, 'entrada', 'Salário novembro',  5200.00, '2026-11-05', 1, 2),
+  (1, 'saida',   'Aluguel',           1500.00, '2026-11-06', 4, 1),
+  (1, 'saida',   'Mercado',            655.30, '2026-11-08', 3, 1),
+  (1, 'saida',   'Combustível',        295.00, '2026-11-11', 6, 1),
+  (1, 'saida',   'Parque e lanche',    160.00, '2026-11-15', 7, 4),
+  (1, 'saida',   'Curso online',       199.90, '2026-11-17', 8, 3),
+  (1, 'saida',   'Compra no Visa',     310.00, '2026-11-19', 9, 4),
+  (1, 'saida',   'Transferência para Poupança', 400.00, '2026-11-20', 9, 5);
