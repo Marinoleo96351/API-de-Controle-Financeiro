@@ -102,3 +102,7 @@ Todas exigem o cabeçalho `Authorization: Bearer TOKEN`, exceto cadastro e login
 - **Datas** no formato `AAAA-MM-DD`; datas inexistentes (como 2026-02-30) são recusadas.
 - **Relatório por fonte/destino:** `inicio` e `fim` são obrigatórios, e `inicio` não pode ser depois de `fim` (400).
 - **Senha** guardada apenas como hash (bcrypt); o `senha_hash` nunca sai nas respostas.
+
+## Testes
+
+Os comandos de teste de todas as rotas estão em [testes/requisicoes.md](testes/requisicoes.md).
