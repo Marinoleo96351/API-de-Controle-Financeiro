@@ -19,6 +19,17 @@ class Relatorio {
       saidas: Number(l.saidas),
     }));
   }
+
+  async lancamentosDeCartao(cartaoId, usuarioId) {
+    const [linhas] = await pool.query(
+      `SELECT id, descricao, valor, data, parcela_atual, total_parcelas
+         FROM lancamentos
+        WHERE fonte_destino_id = ? AND usuario_id = ?
+        ORDER BY data, parcela_atual`,
+      [cartaoId, usuarioId]
+    );
+    return linhas;
+  }
 }
 
 module.exports = new Relatorio();
