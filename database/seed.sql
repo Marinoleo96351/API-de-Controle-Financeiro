@@ -38,7 +38,22 @@ INSERT INTO fontes_destinos
   (7, 2, 'Salário',        'renda',          NULL, NULL, NULL,    FALSE),
   (8, 2, 'Cartão Inter',   'cartao_credito', 10,   17,   2000.00, FALSE);
 
-  -- Ana: setembro de 2026
+-- Notebook em 10x no Nubank: mesma data, mesmo grupo, parcelas 1 a 10
+INSERT INTO lancamentos
+  (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id,
+   parcela_atual, total_parcelas, grupo_parcelamento) VALUES
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  1, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  2, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  3, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  4, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  5, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  6, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  7, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  8, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3,  9, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01'),
+  (1, 'saida', 'Notebook', 300.00, '2026-10-28', 8, 3, 10, 10, '6f1c2a3e-0b7d-4c55-9a8e-2d4f6b1c9e01');
+
+-- Ana: setembro de 2026
 INSERT INTO lancamentos
   (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
   (1, 'entrada', 'Salário setembro',  5200.00, '2026-09-05', 1, 2),
@@ -50,7 +65,7 @@ INSERT INTO lancamentos
   (1, 'saida',   'Compra no Visa',     240.00, '2026-09-25', 9, 4),
   (1, 'saida',   'Transferência para Poupança', 400.00, '2026-09-28', 9, 5);
 
-  -- Ana: outubro de 2026
+-- Ana: outubro de 2026
 INSERT INTO lancamentos
   (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
   (1, 'entrada', 'Salário outubro',   5200.00, '2026-10-05', 1, 2),
@@ -62,7 +77,7 @@ INSERT INTO lancamentos
   (1, 'saida',   'Compra no Visa',     430.00, '2026-10-25', 9, 4),
   (1, 'saida',   'Transferência para Poupança', 400.00, '2026-10-29', 9, 5);
 
-  -- Ana: novembro de 2026
+-- Ana: novembro de 2026
 INSERT INTO lancamentos
   (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
   (1, 'entrada', 'Salário novembro',  5200.00, '2026-11-05', 1, 2),
@@ -74,7 +89,7 @@ INSERT INTO lancamentos
   (1, 'saida',   'Compra no Visa',     310.00, '2026-11-19', 9, 4),
   (1, 'saida',   'Transferência para Poupança', 400.00, '2026-11-20', 9, 5);
 
-  -- Bruno: poucos lançamentos (ids próprios: categorias 10 a 18, fontes 6 a 8)
+-- Bruno: poucos lançamentos (categorias 10 a 18, fontes 6 a 8)
 INSERT INTO lancamentos
   (usuario_id, tipo, descricao, valor, data, categoria_id, fonte_destino_id) VALUES
   (2, 'entrada', 'Salário outubro',  3800.00, '2026-10-05', 10, 7),
