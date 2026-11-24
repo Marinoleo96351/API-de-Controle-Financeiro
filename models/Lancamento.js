@@ -129,13 +129,17 @@ class Lancamento {
   }
 
   async atualizar(id, usuarioId, dados) {
-    const [resultado] = await pool.query(
+    // affectedRows só conta linhas cujo dado mudou; checa a existência à parte
+    // pra não devolver "não encontrado" quando o update não muda nada.
+    const existe = await this.buscarPorId(id, usuarioId);
+    if (!existe) return false;
+    await pool.query(
       `UPDATE lancamentos
           SET tipo = ?, descricao = ?, valor = ?, data = ?, categoria_id = ?, fonte_destino_id = ?
         WHERE id = ? AND usuario_id = ?`,
       [dados.tipo, dados.descricao, dados.valor, dados.data, dados.categoriaId, dados.fonteDestinoId, id, usuarioId]
     );
-    return resultado.affectedRows > 0;
+    return true;
   }
 
   async excluir(id, usuarioId) {
@@ -156,3 +160,4 @@ class Lancamento {
 }
 
 module.exports = new Lancamento();
+module.exports.ITENS_POR_PAGINA = ITENS_POR_PAGINA; // pra rota calcular totalPaginas sem duplicar o número
