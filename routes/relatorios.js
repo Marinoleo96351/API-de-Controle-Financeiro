@@ -8,7 +8,29 @@ const { hoje } = require('../utils/datas');
 const { montarFaturas } = require('../utils/faturas');
 
 // /relatorios/categorias — Marino (RF7)
-router.get('/categorias', (req, res) => res.status(501).json({ erro: 'Ainda não implementado.' }));
+router.get('/categorias', async (req, res) => {
+  const usuarioId = req.auth.id;
+  const { inicio, fim } = req.query;
+
+  const campos = validarPeriodo(inicio, fim);
+  if (Object.keys(campos).length > 0) return erroValidacao(res, campos);
+
+  const linhas = await Relatorio.porCategoria(usuarioId, inicio, fim);
+  const r2 = (n) => Number(n.toFixed(2));
+
+  const entradas = linhas
+    .filter((l) => l.entradas > 0)
+    .map((l) => ({ id: l.id, nome: l.nome, total: r2(l.entradas) }));
+  const saidas = linhas
+    .filter((l) => l.saidas > 0)
+    .map((l) => ({ id: l.id, nome: l.nome, total: r2(l.saidas) }));
+
+  return res.status(200).json({
+    periodo: { inicio, fim },
+    entradas: { total: r2(entradas.reduce((s, c) => s + c.total, 0)), categorias: entradas },
+    saidas: { total: r2(saidas.reduce((s, c) => s + c.total, 0)), categorias: saidas },
+  });
+});
 
 // /relatorios/fontes-destinos — Dupla (RF8)
 router.get('/fontes-destinos', async (req, res) => {
