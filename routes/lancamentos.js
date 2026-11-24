@@ -7,8 +7,7 @@ const FonteDestino = require('../models/FonteDestino');
 const { erroValidacao, naoEncontrado } = require('../utils/respostas');
 const { dataValida, numeroPositivo, idValido } = require('../utils/validacao');
 const { mesCorrente } = require('../utils/datas');
-
-const r2 = (n) => Number(n.toFixed(2)); // arredonda pra 2 casas e garante Number
+const { arredondar: r2 } = require('../utils/numeros');
 
 function formatar(l) {
   return {
@@ -32,7 +31,7 @@ function validarCampos(req, res) {
   if (tipo !== 'entrada' && tipo !== 'saida') {
     campos.tipo = "O tipo deve ser 'entrada' ou 'saida'.";
   }
-  if (typeof descricao !== 'string' || descricao.trim() === '' || descricao.length > 120) {
+  if (typeof descricao !== 'string' || descricao.trim() === '' || descricao.trim().length > 120) {
     campos.descricao = 'A descrição é obrigatória e deve ter até 120 caracteres.';
   }
   if (!numeroPositivo(valor)) {
@@ -162,7 +161,7 @@ router.get('/', async (req, res) => {
     periodo: { inicio: filtros.inicio, fim: filtros.fim },
     resumo: { entradas, saidas, saldo: r2(entradas - saidas) },
     pagina: filtros.pagina,
-    totalPaginas: Math.max(1, Math.ceil(total / 20)),
+    totalPaginas: Math.max(1, Math.ceil(total / Lancamento.ITENS_POR_PAGINA)),
     itens: itens.map(formatar),
   });
 });

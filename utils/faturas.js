@@ -24,8 +24,12 @@ function calcularFatura(data, cartao, parcelaAtual) {
     ? fechamento
     : somarMeses(fechamento.ano, fechamento.mes, 1);
 
+  // diaVencimento pode ser 31 e o mês do vencimento ter menos dias (ex: fevereiro)
+  const ultimoDia = new Date(vencimentoMes.ano, vencimentoMes.mes, 0).getDate();
+  const diaVencimento = Math.min(cartao.diaVencimento, ultimoDia);
+
   const referencia = `${vencimentoMes.ano}-${pad(vencimentoMes.mes)}`;
-  return { referencia, vencimento: `${referencia}-${pad(cartao.diaVencimento)}` };
+  return { referencia, vencimento: `${referencia}-${pad(diaVencimento)}` };
 }
 
 // Monta a fatura aberta e as 'meses - 1' seguintes, e o limite utilizado, sem acessar
