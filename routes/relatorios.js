@@ -6,6 +6,7 @@ const { erroValidacao } = require('../utils/respostas');
 const { validarPeriodo } = require('../utils/validacao');
 const { hoje } = require('../utils/datas');
 const { montarFaturas } = require('../utils/faturas');
+const { arredondar: r2 } = require('../utils/numeros');
 
 // /relatorios/categorias — Marino (RF7)
 router.get('/categorias', async (req, res) => {
@@ -16,7 +17,6 @@ router.get('/categorias', async (req, res) => {
   if (Object.keys(campos).length > 0) return erroValidacao(res, campos);
 
   const linhas = await Relatorio.porCategoria(usuarioId, inicio, fim);
-  const r2 = (n) => Number(n.toFixed(2));
 
   const entradas = linhas
     .filter((l) => l.entradas > 0)
@@ -41,7 +41,6 @@ router.get('/fontes-destinos', async (req, res) => {
   if (Object.keys(campos).length > 0) return erroValidacao(res, campos);
 
   const linhas = await Relatorio.porFonteDestino(usuarioId, inicio, fim);
-  const r2 = (n) => Number(n.toFixed(2));
 
   const fontes = linhas
     .filter((l) => l.entradas > 0)
