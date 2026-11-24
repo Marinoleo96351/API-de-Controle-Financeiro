@@ -289,9 +289,77 @@ Resposta: `campos.fim`.
 curl -i "http://localhost:3000/relatorios/fontes-destinos?inicio=2026-10-01&fim=2026-10-31"
 ```
 
-### Por categoria e faturas
+### Por categoria (200)
 
-(MARINO)
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/categorias?inicio=2026-10-01&fim=2026-10-31"
+```
+
+Resposta: `periodo`, `entradas` (total e lista de categorias) e `saidas` (total e lista de categorias). Em outubro, com o seed da Ana: entradas 5200 (Salário) e saídas 6920,80, divididas em Alimentação 710,80, Educação 3000 (as 10 parcelas do notebook, todas lançadas em 28/10), Lazer 350, Mobilidade 310, Moradia 1500, Outras saídas 830 e Saúde 220.
+
+### Sem inicio (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/categorias?fim=2026-10-31"
+```
+
+Resposta: `campos.inicio`.
+
+### Data inexistente (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/categorias?inicio=2026-02-30&fim=2026-10-31"
+```
+
+Resposta: `campos.inicio`.
+
+### Início depois do fim (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/categorias?inicio=2026-10-31&fim=2026-10-01"
+```
+
+Resposta: `campos.fim`.
+
+### Sem token (401)
+
+```bash
+curl -i "http://localhost:3000/relatorios/categorias?inicio=2026-10-01&fim=2026-10-31"
+```
+
+## Faturas
+
+Pré-requisito: variável `$TOKEN` definida (veja a seção Token).
+
+### Faturas dos cartões (200)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" http://localhost:3000/relatorios/faturas
+```
+
+Resposta: lista com um item por cartão da Ana (Cartão Nubank e Visa crédito), cada um com `limite`, `limiteUtilizado`, `limiteDisponivel` e as `faturas` dos próximos 3 meses (padrão). Os valores mudam com a data atual, porque `hoje()` usa o relógio do sistema — confira que o Cartão Nubank traz as parcelas do Notebook (300 cada, compradas em 28/10) distribuídas conforme o fechamento (dia 3) e o vencimento (dia 10).
+
+### Meses customizado (200)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/faturas?meses=1"
+```
+
+Resposta: mesma estrutura, mas o array `faturas` de cada cartão vem só com a fatura em aberto (1 item).
+
+### Meses inválido (400)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" "http://localhost:3000/relatorios/faturas?meses=13"
+```
+
+Resposta: `{"erro":"Dados inválidos.","campos":{"meses":"..."}}`.
+
+### Sem token (401)
+
+```bash
+curl -i http://localhost:3000/relatorios/faturas
+```
 
 ## Saúde financeira
 
