@@ -33,13 +33,17 @@ class FonteDestino {
   }
 
   async atualizar(id, usuarioId, { nome, tipo, diaFechamento, diaVencimento, limite }) {
-    const [r] = await pool.query(
+    // affectedRows só conta linhas cujo dado mudou; checa a existência à parte
+    // pra não devolver "não encontrada" quando o update não muda nada.
+    const existe = await this.buscarPorId(id, usuarioId);
+    if (!existe) return false;
+    await pool.query(
       `UPDATE fontes_destinos
           SET nome = ?, tipo = ?, dia_fechamento = ?, dia_vencimento = ?, limite = ?
         WHERE id = ? AND usuario_id = ?`,
       [nome, tipo, diaFechamento, diaVencimento, limite, id, usuarioId]
     );
-    return r.affectedRows > 0;
+    return true;
   }
 
   async excluir(id, usuarioId) {
