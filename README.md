@@ -88,6 +88,7 @@ Todas exigem o cabeçalho `Authorization: Bearer TOKEN`, exceto cadastro e login
 | GET | `/relatorios/fontes-destinos` | sim | Entradas por fonte, saídas por destino e saldo das contas (`?inicio=&fim=`) |
 | GET | `/relatorios/categorias` | sim | Relatório por categoria |
 | GET | `/relatorios/faturas` | sim | Previsão de faturas dos cartões |
+| GET | `/saude-financeira` | sim | Indicadores de saúde financeira, projeção de 3 meses e dicas |
 
 ## Decisões tomadas
 
@@ -102,6 +103,20 @@ Todas exigem o cabeçalho `Authorization: Bearer TOKEN`, exceto cadastro e login
 - **Datas** no formato `AAAA-MM-DD`; datas inexistentes (como 2026-02-30) são recusadas.
 - **Relatório por fonte/destino:** `inicio` e `fim` são obrigatórios, e `inicio` não pode ser depois de `fim` (400).
 - **Senha** guardada apenas como hash (bcrypt); o `senha_hash` nunca sai nas respostas.
+- **Desafio (`GET /saude-financeira`):** o mês analisado é o último mês completo (o anterior ao atual). As médias usam os 3 últimos meses completos, contando só os meses em que o usuário teve lançamentos.
+- **Indicadores:** taxa de poupança = (entradas − saídas) ÷ entradas do mês analisado; comprometimento dos cartões = média mensal das faturas que vencem nos próximos 3 meses ÷ média mensal de entradas; meses de reserva = saldo das contas marcadas como reserva ÷ média mensal de saídas; categoria fora da curva = gasto do mês analisado acima da média dos 3 meses anteriores.
+- **Projeção de 3 meses:** entradas previstas = média das entradas; saídas previstas = média das saídas que não são de cartão + a fatura do mês.
+- **Dicas:** são regras com limites fixos (`if`), não inteligência artificial. Os limites também vêm no campo `limites` da resposta:
+
+| Indicador | Gera dica quando |
+| --- | --- |
+| Taxa de poupança | menor que 10% |
+| Comprometimento dos cartões | maior que 30% |
+| Meses de reserva | menor que 3 |
+| Categoria fora da curva | mais de 20% acima da média |
+| Projeção | saldo previsto negativo |
+
+- **Aviso:** toda resposta traz o campo `aviso`: informações educativas, sem recomendação financeira profissional.
 
 ## Testes
 

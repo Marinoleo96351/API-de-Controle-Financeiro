@@ -363,4 +363,32 @@ curl -i http://localhost:3000/relatorios/faturas
 
 ## Saúde financeira
 
-(DESAFIO)
+Pré-requisito: variável `$TOKEN` definida (veja a seção Token).
+
+### Indicadores, projeção e dicas (200)
+
+```bash
+curl -i -H "Authorization: Bearer $TOKEN" http://localhost:3000/saude-financeira
+```
+
+Resposta: `referencia` (mês analisado e meses usados na média), `indicadores` (`taxaPoupanca`, `comprometimentoCartoes`, `mesesDeReserva` e `categoriasForaDaCurva`), `projecao` (3 meses, cada um com `saldoPrevisto`), `dicas`, `limites` e `aviso`. O mês analisado é o último mês completo, então os valores mudam com a data atual, porque `hoje()` usa o relógio do sistema. Em novembro de 2026, com o seed da Ana, o mês analisado é outubro (entradas 5200 e saídas 6920,80): a `taxaPoupanca` fica negativa e gera uma dica de poupança.
+
+### Campo aviso (200)
+
+A mesma resposta traz o campo `aviso`: "Informações educativas; não constituem recomendação financeira profissional."
+
+### Usuário com poucos dados (200)
+
+```bash
+TOKEN_BRUNO=$(curl -s -X POST http://localhost:3000/auth/login -H "Content-Type: application/json" \
+  -d '{"email":"bruno@email.com","senha":"Senha1234"}' | node -pe "JSON.parse(require('fs').readFileSync(0)).token")
+curl -i -H "Authorization: Bearer $TOKEN_BRUNO" http://localhost:3000/saude-financeira
+```
+
+Resposta: os números do Bruno, diferentes dos da Ana (cada usuário vê só os próprios dados). Sem lançamentos nos 3 últimos meses completos, `indicadores` vem `null`, `projecao` vem vazia e `dicas` traz uma mensagem informativa.
+
+### Sem token (401)
+
+```bash
+curl -i http://localhost:3000/saude-financeira
+```
